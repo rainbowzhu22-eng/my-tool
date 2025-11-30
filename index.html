@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>欢乐摇骰子</title>
+    <style>
+        /* --- 全局设置 --- */
+        :root {
+            --bg-color: #FEF9E7; /* 奶油黄背景 */
+            --dice-bg: #FFFFFF;
+            --dot-color: #FF6B6B; /* 珊瑚红点点 */
+            --btn-color: #4ECDC4; /* 薄荷绿按钮 */
+            --btn-shadow: #2FA69E;
+            --text-color: #556270;
+        }
+
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            background-image: radial-gradient(#F0E6D2 15%, transparent 16%), radial-gradient(#F0E6D2 15%, transparent 16%);
+            background-size: 60px 60px;
+            background-position: 0 0, 30px 30px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* --- 标题区域 --- */
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        h1 {
+            color: var(--text-color);
+            font-size: 2rem;
+            margin: 0;
+            text-shadow: 2px 2px 0px white;
+            letter-spacing: 2px;
+        }
+
+        /* --- 骰子主体 (CSS Grid绘制) --- */
+        .scene {
+            width: 200px;
+            height: 200px;
+            perspective: 600px;
+            margin-bottom: 60px;
+        }
+
+        .dice {
+            width: 100%;
+            height: 100%;
+            background-color: var(--dice-bg);
+            border-radius: 30px; /* 超大圆角 */
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1), inset 0 -5px 0 rgba(0,0,0,0.05);
+            border: 8px solid #333; /* 卡通描边 */
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: repeat(3, 1fr);
+            padding: 15px;
+            box-sizing: border-box;
+            transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+        }
+
+        /* 点点样式 */
+        .dot {
+            background-color: var(--dot-color);
+            border-radius: 50%;
+            margin: 6px;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+            visibility: hidden; /* 默认隐藏，通过JS控制显示 */
+        }
+
+        /* 特殊点点颜色 (1点如果是红色的传统) */
+        .dot.center { background-color: #FF6B6B; }
+
+        /* 点的位置映射 */
+        /* 
+           0 1 2
+           3 4 5
+           6 7 8 
+        */
+
+        /* 定义不同点数的显示逻辑 */
+        /* 1点: 中间 [4] */
+        .dice[data-val="1"] .d-4 { visibility: visible; width: 40px; height: 40px; margin: auto; transform: scale(1.2); }
+
+        /* 2点: [2, 6] */
+        .dice[data-val="2"] .d-2, 
+        .dice[data-val="2"] .d-6 { visibility: visible; }
+
+        /* 3点: [2, 4, 6] */
+        .dice[data-val="3"] .d-2, 
+        .dice[data-val="3"] .d-4, 
+        .dice[data-val="3"] .d-6 { visibility: visible; }
+
+        /* 4点: [0, 2, 6, 8] */
+        .dice[data-val="4"] .d-0, .dice[data-val="4"] .d-2, 
+        .dice[data-val="4"] .d-6, .dice[data-val="4"] .d-8 { visibility: visible; }
+
+        /* 5点: [0, 2, 4, 6, 8] */
+        .dice[data-val="5"] .d-0, .dice[data-val="5"] .d-2, .dice[data-val="5"] .d-4,
+        .dice[data-val="5"] .d-6, .dice[data-val="5"] .d-8 { visibility: visible; }
+
+        /* 6点: [0, 2, 3, 5, 6, 8] */
+        .dice[data-val="6"] .d-0, .dice[data-val="6"] .d-2, .dice[data-val="6"] .d-3,
+        .dice[data-val="6"] .d-5, .dice[data-val="6"] .d-6, .dice[data-val="6"] .d-8 { visibility: visible; }
+
+
+        /* --- 按钮样式 --- */
+        .btn {
+            background-color: var(--btn-color);
+            color: white;
+            border: none;
+            padding: 15px 50px;
+            font-size: 1.5rem;
+            border-radius: 50px;
+            font-weight: bold;
+            box-shadow: 0 8px 0 var(--btn-shadow);
+            cursor: pointer;
+            transition: all 0.1s;
+            outline: none;
+            user-select: none;
+            position: relative;
+            top: 0;
+        }
+
+        .btn:active {
+            box-shadow: 0 2px 0 var(--btn-shadow);
+            top: 6px;
+        }
+
+        /* --- 动画类 --- */
+        .shake {
+            animation: shake-animation 0.5s ease-in-out;
+        }
+
+        @keyframes shake-animation {
+            0% { transform: translate(0, 0) rotate(0deg) scale(1); }
+            20% { transform: translate(-10px, 0) rotate(-10deg) scale(0.95); }
+            40% { transform: translate(10px, 0) rotate(10deg) scale(0.95); }
+            60% { transform: translate(-10px, 0) rotate(-10deg) scale(1.05); }
+            80% { transform: translate(10px, 0) rotate(10deg) scale(1.05); }
+            100% { transform: translate(0, 0) rotate(0deg) scale(1); }
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        /* --- 结果文字 --- */
+        .result-text {
+            height: 30px;
+            margin-top: 20px;
+            font-size: 1.2rem;
+            color: #888;
+            font-weight: bold;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .result-text.show {
+            opacity: 1;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>🎲 摇一摇 🎲</h1>
+    </div>
+
+    <div class="scene">
+        <!-- data-val 控制显示几点，默认显示1点 -->
+        <div class="dice" id="dice" data-val="1">
+            <div class="dot d-0"></div>
+            <div class="dot d-1"></div>
+            <div class="dot d-2"></div>
+            <div class="dot d-3"></div>
+            <div class="dot d-4"></div>
+            <div class="dot d-5"></div>
+            <div class="dot d-6"></div>
+            <div class="dot d-7"></div>
+            <div class="dot d-8"></div>
+        </div>
+    </div>
+
+    <button class="btn" id="rollBtn">开始</button>
+    <div class="result-text" id="resultText">点数是：1</div>
+
+    <script>
+        const dice = document.getElementById('dice');
+        const btn = document.getElementById('rollBtn');
+        const resultText = document.getElementById('resultText');
+        let isRolling = false;
+
+        // 随机数函数
+        function getRandomInt(min, max) {
+            return Math.floor(Math.random() * (max - min + 1)) + min;
+        }
+
+        // 摇骰子逻辑
+        function rollDice() {
+            if (isRolling) return;
+            isRolling = true;
+            
+            // 1. 播放动画
+            dice.classList.add('shake');
+            btn.textContent = "摇动中...";
+            resultText.classList.remove('show');
+
+            // 模拟快速变换数字的视觉效果
+            let interval = setInterval(() => {
+                const tempVal = getRandomInt(1, 6);
+                dice.setAttribute('data-val', tempVal);
+            }, 100);
+
+            // 2. 停止动画并显示结果
+            setTimeout(() => {
+                clearInterval(interval);
+                dice.classList.remove('shake');
+                
+                // 生成最终点数
+                const finalVal = getRandomInt(1, 6);
+                dice.setAttribute('data-val', finalVal);
+                
+                // 更新文字
+                btn.textContent = "再摇一次";
+                resultText.textContent = `太棒了！是 ${finalVal} 点`;
+                resultText.classList.add('show');
+                
+                isRolling = false;
+            }, 800); // 动画持续0.8秒
+        }
+
+        // 绑定点击事件
+        btn.addEventListener('click', rollDice);
+
+        // 摇一摇手机触发 (使用 DeviceMotion，需要HTTPS支持，部分手机需授权)
+        // 简单实现：点击整个屏幕任意非按钮区域也可以触发（适合小朋友）
+        document.body.addEventListener('click', (e) => {
+            if(e.target !== btn && !isRolling) {
+               // 可选：点击背景也可以摇
+               // rollDice(); 
+            }
+        });
+
+    </script>
+</body>
+</html>
