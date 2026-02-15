@@ -1,230 +1,508 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>欢乐摇骰子</title>
-    <style>
-        /* --- 全局设置 --- */
-        :root {
-            --bg-color: #FEF9E7; /* 奶油黄背景 */
-            --dice-bg: #FFFFFF;
-            --dot-color: #FF6B6B; /* 珊瑚红点点 */
-            --btn-color: #4ECDC4; /* 薄荷绿按钮 */
-            --btn-shadow: #2FA69E;
-            --text-color: #556270; /* 主色调：深灰蓝 */
-        }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>自然拼读英语学习助手</title>
+  <style>
+    :root {
+      --bg: #f4f7ff;
+      --card: #ffffff;
+      --primary: #4a67ff;
+      --primary-dark: #3048c5;
+      --ok: #1f9d67;
+      --warn: #c97a12;
+      --text: #1d2740;
+      --muted: #66708a;
+      --border: #dce3ff;
+    }
 
-        body, html {
-            margin: 0;
-            padding: 0;
-            width: 100%;
-            height: 100%;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--bg-color);
-            background-image: radial-gradient(#F0E6D2 15%, transparent 16%), radial-gradient(#F0E6D2 15%, transparent 16%);
-            background-size: 60px 60px;
-            background-position: 0 0, 30px 30px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            overflow: hidden;
-            -webkit-tap-highlight-color: transparent;
-            position: relative;
-        }
+    * { box-sizing: border-box; }
 
-        /* --- 标题区域 --- */
-        .header {
-            text-align: center;
-            margin-bottom: 30px; /* 稍微调小间距，给底部留空间 */
-            animation: float 3s ease-in-out infinite;
-        }
+    body {
+      margin: 0;
+      font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
+      color: var(--text);
+      background: linear-gradient(150deg, #f4f7ff, #e9f0ff);
+      min-height: 100vh;
+      padding: 16px;
+    }
 
-        h1 {
-            color: var(--text-color);
-            font-size: 2rem;
-            margin: 0;
-            text-shadow: 2px 2px 0px white;
-            letter-spacing: 2px;
-        }
+    .app {
+      max-width: 980px;
+      margin: 0 auto;
+      display: grid;
+      gap: 14px;
+    }
 
-        /* --- 骰子主体 --- */
-        .scene {
-            width: 200px;
-            height: 200px;
-            perspective: 600px;
-            margin-bottom: 50px;
-        }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 14px;
+      box-shadow: 0 8px 24px rgba(41, 63, 137, 0.08);
+    }
 
-        .dice {
-            width: 100%;
-            height: 100%;
-            background-color: var(--dice-bg);
-            border-radius: 30px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.1), inset 0 -5px 0 rgba(0,0,0,0.05);
-            border: 8px solid #333;
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            grid-template-rows: repeat(3, 1fr);
-            padding: 15px;
-            box-sizing: border-box;
-            transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            position: relative;
-        }
+    h1 { margin: 0 0 8px; font-size: 24px; }
+    h2 { margin: 0 0 10px; font-size: 18px; }
+    p { margin: 6px 0; color: var(--muted); }
 
-        .dot {
-            background-color: var(--dot-color);
-            border-radius: 50%;
-            margin: 6px;
-            box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
-            visibility: hidden;
-        }
+    textarea {
+      width: 100%;
+      min-height: 110px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 10px;
+      font-size: 15px;
+      resize: vertical;
+    }
 
-        .dot.center { background-color: #FF6B6B; }
+    .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+    .between { justify-content: space-between; }
 
-        /* 点数显示逻辑 */
-        .dice[data-val="1"] .d-4 { visibility: visible; width: 40px; height: 40px; margin: auto; transform: scale(1.2); }
-        .dice[data-val="2"] .d-2, .dice[data-val="2"] .d-6 { visibility: visible; }
-        .dice[data-val="3"] .d-2, .dice[data-val="3"] .d-4, .dice[data-val="3"] .d-6 { visibility: visible; }
-        .dice[data-val="4"] .d-0, .dice[data-val="4"] .d-2, .dice[data-val="4"] .d-6, .dice[data-val="4"] .d-8 { visibility: visible; }
-        .dice[data-val="5"] .d-0, .dice[data-val="5"] .d-2, .dice[data-val="5"] .d-4, .dice[data-val="5"] .d-6, .dice[data-val="5"] .d-8 { visibility: visible; }
-        .dice[data-val="6"] .d-0, .dice[data-val="6"] .d-2, .dice[data-val="6"] .d-3, .dice[data-val="6"] .d-5, .dice[data-val="6"] .d-6, .dice[data-val="6"] .d-8 { visibility: visible; }
+    button {
+      border: none;
+      border-radius: 10px;
+      padding: 9px 14px;
+      cursor: pointer;
+      color: #fff;
+      background: var(--primary);
+      font-weight: 600;
+    }
 
-        /* --- 按钮样式 --- */
-        .btn {
-            background-color: var(--btn-color);
-            color: white;
-            border: none;
-            padding: 15px 50px;
-            font-size: 1.5rem;
-            border-radius: 50px;
-            font-weight: bold;
-            box-shadow: 0 8px 0 var(--btn-shadow);
-            cursor: pointer;
-            transition: all 0.1s;
-            outline: none;
-            user-select: none;
-            position: relative;
-            top: 0;
-            z-index: 10;
-        }
+    button:hover { background: var(--primary-dark); }
+    button.secondary { background: #6f7894; }
+    button.ok { background: var(--ok); }
+    button.warn { background: var(--warn); }
 
-        .btn:active {
-            box-shadow: 0 2px 0 var(--btn-shadow);
-            top: 6px;
-        }
+    .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
 
-        /* --- 动画类 --- */
-        .shake { animation: shake-animation 0.5s ease-in-out; }
-        @keyframes shake-animation {
-            0% { transform: translate(0, 0) rotate(0deg) scale(1); }
-            20% { transform: translate(-10px, 0) rotate(-10deg) scale(0.95); }
-            40% { transform: translate(10px, 0) rotate(10deg) scale(0.95); }
-            60% { transform: translate(-10px, 0) rotate(-10deg) scale(1.05); }
-            80% { transform: translate(10px, 0) rotate(10deg) scale(1.05); }
-            100% { transform: translate(0, 0) rotate(0deg) scale(1); }
-        }
-        @keyframes float {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-10px); }
-        }
+    .chip {
+      background: #eef2ff;
+      border: 1px solid var(--border);
+      color: #2e3b6f;
+      border-radius: 999px;
+      padding: 5px 10px;
+      cursor: pointer;
+      font-size: 14px;
+    }
 
-        /* --- 结果文字 --- */
-        .result-text {
-            height: 30px;
-            margin-top: 25px;
-            font-size: 1.2rem;
-            color: #888;
-            font-weight: bold;
-            opacity: 0;
-            transition: opacity 0.3s;
-        }
-        .result-text.show { opacity: 1; }
+    .chip.active { background: #dbe4ff; border-color: #b3c4ff; }
 
-        /* --- 底部 AI 标识 (已调整) --- */
-        .footer-note {
-            position: fixed;
-            bottom: 40px; /* 向上移动，不贴边 */
-            width: 100%;
-            text-align: center;
-            font-size: 0.9rem; /* 稍微大一点，看清文字 */
-            color: var(--text-color); /* 使用主题深灰色，确保清晰 */
-            opacity: 0.6; /* 60%不透明度，既显眼又不刺眼 */
-            font-weight: bold; /* 加粗一点 */
-            letter-spacing: 1.5px;
-            pointer-events: none;
-        }
+    .badge {
+      font-size: 12px;
+      color: #fff;
+      border-radius: 999px;
+      padding: 2px 8px;
+      background: #8a95bc;
+      margin-left: 6px;
+    }
 
-    </style>
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 12px;
+    }
+
+    .focus {
+      border: 1px dashed #bfd0ff;
+      border-radius: 10px;
+      padding: 10px;
+      background: #f8faff;
+    }
+
+    .big-word { font-size: 32px; margin: 4px 0; font-weight: 700; }
+    .hint { color: #4256b2; font-weight: 600; }
+    .small { font-size: 13px; color: var(--muted); }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 8px;
+    }
+
+    .stat {
+      background: #f7f9ff;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 8px;
+    }
+
+    .question { font-size: 20px; margin: 8px 0 2px; font-weight: 700; }
+
+    input[type="text"] {
+      width: 100%;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 8px;
+      font-size: 15px;
+    }
+
+    .feedback { font-weight: 700; min-height: 22px; }
+    .ok-text { color: var(--ok); }
+    .bad-text { color: #cc324b; }
+  </style>
 </head>
 <body>
+  <main class="app">
+    <section class="card">
+      <h1>📚 自然拼读闭环学习助手</h1>
+      <p>目标：从“读不出来、记不住”到“能拼读、能朗读、能背诵”。支持 <b>学习 → 测试 → 评估</b> 的闭环。</p>
+      <textarea id="lessonInput">The cat sat on the mat. She likes reading books after school. I can see a bright moon tonight.</textarea>
+      <div class="row" style="margin-top:10px;">
+        <button id="buildBtn">生成学习词库</button>
+        <button id="speakTextBtn" class="secondary">朗读整段课文</button>
+      </div>
+      <p class="small">提示：可直接粘贴课文，系统会自动抽取英文单词并去重。</p>
+      <div class="chips" id="wordChips"></div>
+    </section>
 
-    <div class="header">
-        <h1>🎲 摇一摇 🎲</h1>
-    </div>
-
-    <div class="scene">
-        <div class="dice" id="dice" data-val="1">
-            <div class="dot d-0"></div>
-            <div class="dot d-1"></div>
-            <div class="dot d-2"></div>
-            <div class="dot d-3"></div>
-            <div class="dot d-4"></div>
-            <div class="dot d-5"></div>
-            <div class="dot d-6"></div>
-            <div class="dot d-7"></div>
-            <div class="dot d-8"></div>
+    <section class="grid-2">
+      <div class="card">
+        <h2>① 学习区（自然拼读 + 跟读）</h2>
+        <div class="focus">
+          <div class="small">当前单词</div>
+          <div class="big-word" id="currentWord">cat</div>
+          <div class="hint" id="phonicsHint">c-a-t</div>
+          <p class="small">规则提示：优先识别常见字母组合（如 sh/ch/th/ee/ai/igh/tion 等）。</p>
+          <div class="row">
+            <button id="speakWordBtn">朗读单词</button>
+            <button id="startReciteBtn" class="ok">开始跟读检测</button>
+          </div>
+          <p id="reciteResult" class="feedback"></p>
         </div>
-    </div>
+      </div>
 
-    <button class="btn" id="rollBtn">开始</button>
-    <div class="result-text" id="resultText">点数是：1</div>
+      <div class="card">
+        <h2>② 测试区（听辨 + 拼写）</h2>
+        <div class="focus">
+          <div class="small">第 <span id="qNo">0</span> / <span id="qTotal">0</span> 题</div>
+          <div class="question" id="questionWord">请先生成词库后开始</div>
+          <div class="small">拼读提示：<span id="testHint">-</span></div>
+          <div class="row" style="margin:8px 0;">
+            <button id="playQuestionBtn">听题（读单词）</button>
+            <button id="newTestBtn" class="warn">开始/重开测试</button>
+          </div>
+          <div id="options" class="chips"></div>
+          <input id="spellInput" type="text" placeholder="输入你听到/看到的单词拼写" />
+          <div class="row" style="margin-top:8px;">
+            <button id="submitAnswerBtn" class="ok">提交答案</button>
+            <button id="nextQBtn" class="secondary">下一题</button>
+          </div>
+          <p id="testFeedback" class="feedback"></p>
+        </div>
+      </div>
+    </section>
 
-    <!-- 底部文字，增加了符号和样式 -->
-    <div class="footer-note">✨ 本应用由 AI 生成 ✨</div>
+    <section class="card">
+      <h2>③ 评估与改进建议</h2>
+      <div class="stats">
+        <div class="stat">词库总数：<b id="statTotal">0</b></div>
+        <div class="stat">测试正确率：<b id="statAccuracy">0%</b></div>
+        <div class="stat">已掌握词数：<b id="statMastered">0</b></div>
+        <div class="stat">薄弱词：<b id="statWeak">-</b></div>
+      </div>
+      <p id="advice" style="margin-top:10px;">建议：先生成词库开始学习。</p>
+    </section>
+  </main>
 
-    <script>
-        const dice = document.getElementById('dice');
-        const btn = document.getElementById('rollBtn');
-        const resultText = document.getElementById('resultText');
-        let isRolling = false;
+  <script>
+    const lessonInput = document.getElementById('lessonInput');
+    const buildBtn = document.getElementById('buildBtn');
+    const speakTextBtn = document.getElementById('speakTextBtn');
+    const wordChips = document.getElementById('wordChips');
 
-        function getRandomInt(min, max) {
-            return Math.floor(Math.random() * (max - min + 1)) + min;
+    const currentWordEl = document.getElementById('currentWord');
+    const phonicsHintEl = document.getElementById('phonicsHint');
+    const speakWordBtn = document.getElementById('speakWordBtn');
+    const startReciteBtn = document.getElementById('startReciteBtn');
+    const reciteResult = document.getElementById('reciteResult');
+
+    const qNo = document.getElementById('qNo');
+    const qTotal = document.getElementById('qTotal');
+    const questionWord = document.getElementById('questionWord');
+    const testHint = document.getElementById('testHint');
+    const playQuestionBtn = document.getElementById('playQuestionBtn');
+    const newTestBtn = document.getElementById('newTestBtn');
+    const options = document.getElementById('options');
+    const spellInput = document.getElementById('spellInput');
+    const submitAnswerBtn = document.getElementById('submitAnswerBtn');
+    const nextQBtn = document.getElementById('nextQBtn');
+    const testFeedback = document.getElementById('testFeedback');
+
+    const statTotal = document.getElementById('statTotal');
+    const statAccuracy = document.getElementById('statAccuracy');
+    const statMastered = document.getElementById('statMastered');
+    const statWeak = document.getElementById('statWeak');
+    const advice = document.getElementById('advice');
+
+    let words = [];
+    let currentWord = 'cat';
+    let progress = {};
+    let testItems = [];
+    let testIndex = 0;
+    let selectedOption = '';
+    let testScore = 0;
+
+    const phonicsPatterns = ['tion', 'sion', 'igh', 'tch', 'dge', 'ph', 'sh', 'ch', 'th', 'wh', 'ck', 'ee', 'ea', 'oa', 'oo', 'ai', 'ay', 'ar', 'or', 'er', 'ir', 'ur', 'ow', 'ou', 'oi', 'oy'];
+
+    function speak(text) {
+      if (!('speechSynthesis' in window)) {
+        alert('当前浏览器不支持语音合成。');
+        return;
+      }
+      const utter = new SpeechSynthesisUtterance(text);
+      utter.lang = 'en-US';
+      utter.rate = 0.85;
+      speechSynthesis.cancel();
+      speechSynthesis.speak(utter);
+    }
+
+    function parseWords(text) {
+      const list = (text.match(/[A-Za-z']+/g) || [])
+        .map(w => w.toLowerCase())
+        .filter(w => /^[a-z]+$/.test(w) && w.length > 1);
+      return [...new Set(list)];
+    }
+
+    function getPhonicsHint(word) {
+      const w = word.toLowerCase();
+      const parts = [];
+      let i = 0;
+      while (i < w.length) {
+        let hit = '';
+        for (const p of phonicsPatterns) {
+          if (w.startsWith(p, i)) {
+            hit = p;
+            break;
+          }
         }
-
-        function rollDice() {
-            if (isRolling) return;
-            isRolling = true;
-            
-            dice.classList.add('shake');
-            btn.textContent = "摇动中...";
-            resultText.classList.remove('show');
-
-            let interval = setInterval(() => {
-                const tempVal = getRandomInt(1, 6);
-                dice.setAttribute('data-val', tempVal);
-            }, 100);
-
-            setTimeout(() => {
-                clearInterval(interval);
-                dice.classList.remove('shake');
-                const finalVal = getRandomInt(1, 6);
-                dice.setAttribute('data-val', finalVal);
-                btn.textContent = "再摇一次";
-                resultText.textContent = `太棒了！是 ${finalVal} 点`;
-                resultText.classList.add('show');
-                isRolling = false;
-            }, 800);
+        if (hit) {
+          parts.push(hit);
+          i += hit.length;
+        } else {
+          parts.push(w[i]);
+          i++;
         }
+      }
 
-        btn.addEventListener('click', rollDice);
-        document.body.addEventListener('click', (e) => {
-            if(e.target !== btn && !isRolling) {
-               // rollDice(); 
-            }
-        });
-    </script>
+      if (w.length > 3 && w.endsWith('e') && !parts.includes('e')) {
+        parts.push('(magic-e)');
+      }
+      return parts.join('-');
+    }
+
+    function ensureProgress(word) {
+      if (!progress[word]) progress[word] = { seen: 0, right: 0 };
+    }
+
+    function renderWords() {
+      wordChips.innerHTML = '';
+      words.forEach(w => {
+        ensureProgress(w);
+        const p = progress[w];
+        const chip = document.createElement('button');
+        chip.className = 'chip' + (w === currentWord ? ' active' : '');
+        const level = p.right >= 3 ? '已掌握' : p.right >= 1 ? '学习中' : '新词';
+        chip.innerHTML = `${w}<span class="badge">${level}</span>`;
+        chip.onclick = () => setCurrentWord(w);
+        wordChips.appendChild(chip);
+      });
+      statTotal.textContent = words.length;
+      updateEvaluation();
+    }
+
+    function setCurrentWord(word) {
+      currentWord = word;
+      currentWordEl.textContent = word;
+      phonicsHintEl.textContent = getPhonicsHint(word);
+      renderWords();
+    }
+
+    function buildLexicon() {
+      words = parseWords(lessonInput.value);
+      if (!words.length) {
+        alert('未检测到英文词，请输入英文课文。');
+        return;
+      }
+      words.forEach(ensureProgress);
+      setCurrentWord(words[0]);
+      renderWords();
+      advice.textContent = '先学习每个词的拼读，再进入测试区，每次完成后根据薄弱词复习。';
+    }
+
+    function startReciteCheck() {
+      if (!('webkitSpeechRecognition' in window || 'SpeechRecognition' in window)) {
+        reciteResult.textContent = '浏览器不支持语音识别：可先用“朗读单词”模仿。';
+        reciteResult.className = 'feedback bad-text';
+        return;
+      }
+
+      const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+      const recognition = new SR();
+      recognition.lang = 'en-US';
+      recognition.interimResults = false;
+      recognition.maxAlternatives = 3;
+
+      reciteResult.textContent = '正在听你读，请说出当前单词...';
+      reciteResult.className = 'feedback';
+      recognition.start();
+
+      recognition.onresult = (event) => {
+        const transcript = event.results[0][0].transcript.toLowerCase().trim();
+        ensureProgress(currentWord);
+        progress[currentWord].seen += 1;
+        if (transcript.includes(currentWord)) {
+          progress[currentWord].right += 1;
+          reciteResult.textContent = `✅ 很棒！识别到：${transcript}`;
+          reciteResult.className = 'feedback ok-text';
+        } else {
+          reciteResult.textContent = `❌ 识别到“${transcript}”，目标是“${currentWord}”`;
+          reciteResult.className = 'feedback bad-text';
+        }
+        renderWords();
+      };
+
+      recognition.onerror = () => {
+        reciteResult.textContent = '语音识别失败，请重试或切换到支持语音识别的浏览器。';
+        reciteResult.className = 'feedback bad-text';
+      };
+    }
+
+    function shuffle(arr) {
+      const a = [...arr];
+      for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [a[i], a[j]] = [a[j], a[i]];
+      }
+      return a;
+    }
+
+    function pickDistractors(target, count = 3) {
+      return shuffle(words.filter(w => w !== target)).slice(0, count);
+    }
+
+    function startTest() {
+      if (!words.length) {
+        alert('请先生成词库。');
+        return;
+      }
+      testItems = shuffle(words).slice(0, Math.min(10, words.length));
+      testIndex = 0;
+      testScore = 0;
+      qTotal.textContent = testItems.length;
+      loadQuestion();
+    }
+
+    function loadQuestion() {
+      if (!testItems.length) return;
+      const target = testItems[testIndex];
+      qNo.textContent = testIndex + 1;
+      questionWord.textContent = '请听音并选择，再完成拼写';
+      testHint.textContent = getPhonicsHint(target);
+      spellInput.value = '';
+      selectedOption = '';
+      testFeedback.textContent = '';
+      options.innerHTML = '';
+
+      const opts = shuffle([target, ...pickDistractors(target)]);
+      opts.forEach(opt => {
+        const btn = document.createElement('button');
+        btn.className = 'chip';
+        btn.textContent = opt;
+        btn.onclick = () => {
+          selectedOption = opt;
+          [...options.children].forEach(c => c.classList.remove('active'));
+          btn.classList.add('active');
+        };
+        options.appendChild(btn);
+      });
+
+      speak(target);
+    }
+
+    function submitAnswer() {
+      if (!testItems.length) return;
+      const target = testItems[testIndex];
+      const typed = spellInput.value.trim().toLowerCase();
+      if (!selectedOption) {
+        testFeedback.textContent = '请先从选项中选择你听到的单词。';
+        testFeedback.className = 'feedback bad-text';
+        return;
+      }
+
+      const optionCorrect = selectedOption === target;
+      const spellingCorrect = typed === target;
+
+      ensureProgress(target);
+      progress[target].seen += 1;
+      if (optionCorrect && spellingCorrect) {
+        testScore += 1;
+        progress[target].right += 1;
+        testFeedback.textContent = '✅ 全对！听辨和拼写都正确。';
+        testFeedback.className = 'feedback ok-text';
+      } else {
+        testFeedback.textContent = `❌ 正确答案：${target}（听辨${optionCorrect ? '√' : '×'} / 拼写${spellingCorrect ? '√' : '×'}）`;
+        testFeedback.className = 'feedback bad-text';
+      }
+      updateEvaluation();
+      renderWords();
+    }
+
+    function nextQuestion() {
+      if (!testItems.length) return;
+      if (testIndex < testItems.length - 1) {
+        testIndex += 1;
+        loadQuestion();
+      } else {
+        const acc = Math.round((testScore / testItems.length) * 100);
+        testFeedback.textContent = `本轮测试完成，得分 ${testScore}/${testItems.length}，正确率 ${acc}%。`;
+        testFeedback.className = 'feedback';
+        updateEvaluation();
+      }
+    }
+
+    function updateEvaluation() {
+      const entries = Object.entries(progress);
+      const mastered = entries.filter(([, p]) => p.right >= 3).map(([w]) => w);
+      const weak = entries
+        .filter(([, p]) => p.seen >= 2 && p.right / p.seen < 0.5)
+        .map(([w]) => w)
+        .slice(0, 6);
+
+      statMastered.textContent = mastered.length;
+      statWeak.textContent = weak.length ? weak.join(', ') : '-';
+
+      const totalSeen = entries.reduce((s, [, p]) => s + p.seen, 0);
+      const totalRight = entries.reduce((s, [, p]) => s + p.right, 0);
+      const accuracy = totalSeen ? Math.round((totalRight / totalSeen) * 100) : 0;
+      statAccuracy.textContent = `${accuracy}%`;
+
+      if (!entries.length) {
+        advice.textContent = '建议：先生成词库开始学习。';
+      } else if (weak.length) {
+        advice.textContent = `建议：优先复习薄弱词（${weak.join(', ')}），并使用“开始跟读检测”每天至少2轮。`;
+      } else if (mastered.length >= Math.max(3, Math.floor(words.length * 0.6))) {
+        advice.textContent = '做得很好！下一步可以粘贴新课文，继续扩展词库并保持复习节奏。';
+      } else {
+        advice.textContent = '继续学习：每个词先听读3次，再做1次测试，形成稳固记忆。';
+      }
+    }
+
+    buildBtn.addEventListener('click', buildLexicon);
+    speakTextBtn.addEventListener('click', () => speak(lessonInput.value));
+    speakWordBtn.addEventListener('click', () => speak(currentWord));
+    startReciteBtn.addEventListener('click', startReciteCheck);
+
+    newTestBtn.addEventListener('click', startTest);
+    playQuestionBtn.addEventListener('click', () => {
+      if (!testItems.length) return;
+      speak(testItems[testIndex]);
+    });
+    submitAnswerBtn.addEventListener('click', submitAnswer);
+    nextQBtn.addEventListener('click', nextQuestion);
+
+    buildLexicon();
+  </script>
 </body>
 </html>
